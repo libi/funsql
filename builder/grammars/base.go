@@ -1,92 +1,104 @@
 package grammars
 
 import (
-	"errors"
 	"fmt"
 	. "github.com/LibiChai/funsql/builder"
+	"reflect"
+	"strconv"
 	"strings"
 )
 
-// var selectComponents = []string{ "aggregate", "columns", "from", "joins", "wheres", "groups",
-// "havings", "orders", "limit", "offset", "unions", "lock",}
 
 type baseGrammar struct {
 	placeholder string
-
+	grammarName string
+	selectComponent []func(builder *FunBuilder)(string,error)
 }
 
-func (b *baseGrammar)CompileSelect(builder *FunBuilder)(sql string,val []interface{},err error){
+func (b *baseGrammar) init(){
+	b.selectComponent = []func(builder *FunBuilder)(string,error){
+		b.compileColumns,
+		b.compileTable,
+		b.compileWheres,
+		b.compileGroups,
+		b.compileHavings,
+		b.compileLimit,
+		b.compileOffset,
+	}
+}
+func (b *baseGrammar) CompileSelect(builder *FunBuilder) (sql string, val []interface{}, err error) {
 
-	sqls,err := b.compileSelectComponents(builder)
-	if(err != nil){
-		return "",nil,err
+	sqls, err := b.compileSelectComponents(builder)
+	if (err != nil) {
+		return "", nil, err
+	}
+	for _,sqlItem := range sqls{
+		if(sqlItem == ""){
+			continue
+		}
+		sql += sqlItem+" "
 	}
 
-	return strings.Join(sqls," "),builder.GetBindings()["where"],nil
+	bindings := builder.GetBindings()
+	if(bindings["where"] != nil){
+		val = append(val,bindings["where"]...)
+	}
+	if(bindings["having"] != nil){
+		val = append(val,bindings["having"]...)
+	}
+	return
 }
-func (b *baseGrammar)CompileUpdate(builder *FunBuilder)(sql string,val []interface{},err error){
+func (b *baseGrammar) CompileUpdate(builder *FunBuilder) (sql string, val []interface{}, err error) {
 	fmt.Println("update")
-	return "",nil,nil
+	return "", nil, nil
 }
-func (b *baseGrammar)CompileDelete(builder *FunBuilder)(sql string,val []interface{},err error){
+func (b *baseGrammar) CompileDelete(builder *FunBuilder) (sql string, val []interface{}, err error) {
 	fmt.Println("update")
-	return "",nil,nil
+	return "", nil, nil
 }
-func (b *baseGrammar)CompileInsert(builder *FunBuilder)(sql string,val []interface{},err error){
+func (b *baseGrammar) CompileInsert(builder *FunBuilder) (sql string, val []interface{}, err error) {
 	fmt.Println("update")
-	return "",nil,nil
+	return "", nil, nil
 }
 
+func (b *baseGrammar) compileSelectComponents(builder *FunBuilder) (sqls []string, err error) {
+	sqls = make([]string, 0)
 
-func (b *baseGrammar)compileSelectComponents(builder *FunBuilder) (sqls []string,err error){
-	sqls = make([]string,0)
-	columns,err := b.compileColumns(builder)
-	if(err != nil){
-		return nil,err
+	for _, component := range b.selectComponent{
+		sql,err := component(builder)
+		if(err != nil){
+			return nil,err
+		}
+		sqls = append(sqls,sql)
 	}
-	sqls = append(sqls,columns)
-
-	table,err := b.compileTable(builder)
-	if(err != nil){
-		return nil,err
-	}
-	sqls = append(sqls,table)
-
-	where,err := b.compileWheres(builder)
-	if(err != nil){
-		return nil,err
-	}
-	sqls = append(sqls,where)
-
-	return sqls,nil
+	return sqls, nil
 }
 
-
-func (b *baseGrammar)compileTable(builder *FunBuilder) (sql string,err error){
-	if(builder.GetTable() == ""){
-		return "",NoTableNameErr
+func (b *baseGrammar) compileTable(builder *FunBuilder) (sql string, err error) {
+	if (builder.GetTable() == "") {
+		return "", NoTableNameErr
 	}
-	return "from "+builder.GetTable(),nil
+	return "from " + builder.GetTable(), nil
 }
 
-func (b *baseGrammar)compileColumns(builder *FunBuilder) (sql string,err error){
+func (b *baseGrammar) compileColumns(builder *FunBuilder) (sql string, err error) {
 	selectSql := "select "
-	if(builder.GetColumns() == nil){
-		return selectSql + "* ",nil
+	if (builder.GetColumns() == nil) {
+		return selectSql + "* ", nil
 	}
-	columns := strings.Join(builder.GetColumns(),", ")
-	return selectSql + columns,nil
+	columns := strings.Join(builder.GetColumns(), ", ")
+	return selectSql + columns, nil
 }
 
-func (b *baseGrammar)compileWheres(builder *FunBuilder) (sql string,err error){
-	if(builder.GetWheres() == nil){
-		return "",nil
+func (b *baseGrammar) compileWheres(builder *FunBuilder) (sql string, err error) {
+	if (builder.GetWheres() == nil) {
+		return "", nil
 	}
 	sql = ""
-	for _,where := range builder.GetWheres(){
-		if(where.IsAnd){
+	for _, where := range builder.GetWheres() {
+		if (where.IsAnd) {
 			sql += "and "
-		}else{
+		} else {
 			sql += "or "
 		}
 
@@ -97,77 +109,144 @@ func (b *baseGrammar)compileWheres(builder *FunBuilder) (sql string,err error){
 		case "basic":
 			sql += b.whereBasic(where)
 		case "in":
-			tmpsql,err = b.whereIn(where,"")
+			tmpsql, err = b.whereIn(where, "")
 			sql += tmpsql
 		case "notIn":
-			tmpsql,err = b.whereIn(where,"not")
+			tmpsql, err = b.whereIn(where, "not")
 			sql += tmpsql
 		case "null":
-			sql += b.whereNull(where,"")
+			sql += b.whereNull(where, "")
 		case "notNull":
-			sql += b.whereNull(where,"not")
+			sql += b.whereNull(where, "not")
 		case "between":
-			tmpsql,err = b.whereBetween(where,"")
+			tmpsql, err = b.whereBetween(where, "")
 			sql += tmpsql
 		case "notBetween":
-			tmpsql,err = b.whereBetween(where,"not")
+			tmpsql, err = b.whereBetween(where, "not")
 			sql += tmpsql
 		}
-		if(err != nil){
-			return "",err
+		if (err != nil) {
+			return "", err
 		}
 		sql += " "
 	}
 
-	return "where " +b.removeLeading(sql),nil
+	return "where " + b.removeLeading(sql), nil
 }
 
-func (b *baseGrammar)removeLeading(sql string) string{
-	sql = strings.TrimLeft(sql,"and")
-	sql = strings.TrimLeft(sql,"or")
+func (b *baseGrammar) compileGroups(builder *FunBuilder) (sql string, err error) {
+	if(builder.GetGroups() == nil){
+		return "",nil
+	}
+	return "group by " + b.columnize(builder.GetGroups()), nil
+}
+
+func (b *baseGrammar) compileHavings(builder *FunBuilder) (sql string, err error) {
+	if (builder.GetHavings() == nil) {
+		return "", nil
+	}
+	sql = ""
+	var tmpsql string
+	for _, having := range builder.GetHavings() {
+		if (having.IsAnd) {
+			sql += "and "
+		} else {
+			sql += "or "
+		}
+		switch having.Type {
+		case "basic":
+			sql += b.havingBasic(having)
+
+		case "raw":
+			sql += having.Sql
+		case "between":
+			tmpsql, err = b.havingBetween(having, "")
+			sql += tmpsql
+		case "notBetween":
+			tmpsql, err = b.havingBetween(having, "not")
+			sql += tmpsql
+		}
+		if (err != nil) {
+			return "", err
+		}
+		sql += " "
+	}
+	return "having " + b.removeLeading(sql), nil
+}
+
+func (b *baseGrammar) compileLimit(builder *FunBuilder) (sql string, err error) {
+	if(builder.GetLimit()==0){
+		return "",nil
+	}
+	return "limit "+ strconv.Itoa(builder.GetLimit()),nil
+}
+func (b *baseGrammar) compileOffset(builder *FunBuilder) (sql string, err error){
+	if(builder.GetOffset() == 0){
+		return "",nil
+	}
+	return "offset "+ strconv.Itoa(builder.GetOffset()),nil
+}
+
+func (b *baseGrammar) removeLeading(sql string) string {
+	sql = strings.TrimLeft(sql, "and")
+	sql = strings.TrimLeft(sql, "or")
 	return sql
 }
 
-func (b *baseGrammar)whereRaw(where Where) string{
+func (b *baseGrammar) whereRaw(where Where) string {
 	return where.Sql
 }
-func (b *baseGrammar)whereBasic(where Where) string{
-	return where.Column+" "+where.Operator+ " "+b.parameter(where.Value)
+func (b *baseGrammar) whereBasic(where Where) string {
+	return where.Column + " " + where.Operator + " " + b.parameter(where.Value)
 }
-func (b *baseGrammar)whereIn(where Where,not string) (sql string,err error){
-	values ,ok := where.Value.([]interface{})
-	if(!ok){
-		//todo err define
-		return "",errors.New("wherein value wrong")
+func (b *baseGrammar) whereIn(where Where, not string) (sql string, err error) {
+	if (!b.checkIsSlice(where.Value)) {
+		return "", WhereParamErr
 	}
-	return where.Column +" "+not+" in ("+b.parameterize(values)+")" ,nil
+	return where.Column + " " + not + " in (" + b.parameterize(where.Value) + ")", nil
 }
-func (b *baseGrammar)whereNull(where Where,not string)string{
-	return where.Column + " is "+not+" null"
+func (b *baseGrammar) whereNull(where Where, not string) string {
+	return where.Column + " is " + not + " null"
 }
-func (b *baseGrammar)whereBetween(where Where,not string)(sql string,err error){
-	values ,ok := where.Value.([]interface{})
-	if(!ok){
-		//todo err define
-		return "",errors.New("wherein value wrong")
+func (b *baseGrammar) whereBetween(where Where, not string) (sql string, err error) {
+	values, ok := where.Value.([]interface{})
+	if (!ok) {
+		return "", WhereBetweenParamErr
 	}
-	if(len(values) < 2){
-		//todo err define
-		return "",errors.New("wherein value wrong")
+	if (len(values) < 2) {
+		return "", WhereBetweenParamErr
 	}
 	min := b.parameter(values[0])
 	max := b.parameter(values[1])
-	return where.Column+ " "+not+" between "+min+" and "+max,nil
+	return where.Column + " " + not + " between " + min + " and " + max, nil
 }
-
-func (b *baseGrammar)parameter(value interface{}) string{
+func (b *baseGrammar) havingBasic(having Having) string {
+	return having.Column + " " + having.Operator + " " + b.parameter(having.Value)
+}
+func (b *baseGrammar) havingBetween(having Having, not string) (sql string, err error) {
+	return b.whereBetween(Where(having), not)
+}
+func (b *baseGrammar) parameter(value interface{}) string {
 	return b.placeholder
 }
 
-func (b *baseGrammar)parameterize(value []interface{}) string{
-	res := make([]string,len(value))
-	for _,v := range value {
-		res = append(res,b.parameter(v))
+func (b *baseGrammar) parameterize(value interface{}) string {
+	v := reflect.ValueOf(value)
+	res := make([]string, 0)
+	for i:=0;i<v.Len();i++{
+		res = append(res, b.parameter(v.Index(i).Interface()))
 	}
-	return strings.Join(res,", ")
+	return strings.Join(res, ", ")
+}
+
+func (b *baseGrammar) columnize(columns []string) string {
+	return strings.Join(columns, ",")
+}
+
+func (b *baseGrammar) checkIsSlice(value interface{}) bool{
+	if(value == nil){
+		return false
+	}
+	v := reflect.ValueOf(value)
+	return  v.Type().Kind() == reflect.Slice
 }

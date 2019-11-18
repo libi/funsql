@@ -11,6 +11,9 @@ type MysqlGrammar struct {
 
 func newMysqlGrammar() *MysqlGrammar{
 	mysqlGrammar := new(MysqlGrammar)
+	mysqlGrammar.init()
 	mysqlGrammar.placeholder = "?"
+	mysqlGrammar.grammarName = "mysql"
+
 	return mysqlGrammar
 }
