@@ -7,6 +7,8 @@ funsql
 
 funsql拼装后的结果包含sql语句和绑定参数两部分，可以非常方便的将这两个参数传入标准sql包进行执行。
 
+!!!项目处理目前开发状态，请勿在线上使用
+
 ```go
 sql,binds,err := funsql.Table("users").Where("age",">",10).Select()
 //输出
