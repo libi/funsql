@@ -4,6 +4,7 @@ funsql
 ## 简介
 **funsql**是一个轻量级的sqlbuilder包，支持函数链式调用且函数名与sql语法相同，可以非常简易的使用go语法进行sql拼装，
 目前已经支持大部分的sql操作语句。
+
 funsql拼装后的结果包含sql语句和绑定参数两部分，可以非常方便的将这两个参数传入标准sql包进行执行。
 
 ```go
@@ -16,6 +17,7 @@ sql,binds,err := funsql.Table("users").Where("age",">",10).Select()
 ## 入口函数 Table()
 为了简化语句，每次sql拼装都必须首先执行入口函数。入口函数会返回*FunBuilder实例作为后续链式操作de基础对象。
 入口函数必须传入当前sql的表名。可选传入语法解析器，默认为mysql（目前只实现了mysql）。
+
 需要使用时直接调用即可。
 
 ```go
@@ -27,6 +29,7 @@ funsql.Table("users","mysql")
 
 ## 结果函数 
 funsql 使用链式调用进行sql拼装，但是最终都必须以 **结果函数** 作为链式的结果才能返回拼装好的sql语句与绑定参数。
+
 结果函数包括([x]为todo项目)：
 - Select 
 - Update [x]
@@ -43,6 +46,7 @@ funsql.Table("users").Select("name","age")
 ## Select 
 在调用Select不传入操作时默认为 * 。当然大部分时候并不希望返回数据库表的所有列，此时可以指定需要的字段即可。
 字段名必须为字符串类型。
+
 查询用户表的所有用户的用户名
 ```go
 funsql.Table("users").Select("name")
@@ -51,7 +55,9 @@ funsql.Table("users").Select("name")
 ## Where
 ### 简单语句
 
-需要构造简单where时需要传入3个参数，分别为字段名，数据库支持的运算符，需要对比的值。例如查询一个年龄大于10岁的用户
+需要构造简单where时需要传入3个参数，分别为字段名，数据库支持的运算符，需要对比的值。
+
+例如查询一个年龄大于10岁的用户
 ```go
 funsql.Table("users").Where("age",">",10).Select()
 ```
@@ -63,6 +69,7 @@ funsql.Table("users").Where("age",">",10).Where("sex","=","man").Select()
 
 ### Or
 默认的多个where之间默认为and，如果需要使用or时使用or语句。在Where函数之前增加Or即可。
+
 查询一个年龄为10岁或者20岁的的用户
 ```go
 funsql.Table("users").Where("age","=",10).OrWhere("age","=",20).Select()
