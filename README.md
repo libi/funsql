@@ -77,6 +77,20 @@ funsql.Table("users").Where("age",">",10).Where("sex","=","man").Select()
 funsql.Table("users").Where("age","=",10).OrWhere("age","=",20).Select()
 ```
 
+### WhereRaw / OrWhereRaw
+有时后sql拼装无法满足需求，需要原生sql条件时可以使用WhereRaw / OrWhereRaw
+
+复杂嵌套查询
+```go
+funsql.Table("users").WhereRaw("age/2 = 10 and name in (select created_by from books) as t")
+```
+
+WhereRaw同时支持自动参数传入，此处需要注意传入的额外参数数量需要与原生sql内的标识符数量一致
+```go
+funsql.Table("users").WhereRaw("age/2 = 10 and name in (select created_by from books where id = ?) as t",1)
+```
+
+
 ### 更多where
 
 #### WhereIn
