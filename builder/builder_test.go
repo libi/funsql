@@ -36,6 +36,12 @@ func TestFunBuilder_Having(t *testing.T) {
 	t.Logf("havings: %+v",b.GetHavings())
 }
 
+func TestFunBuilder_OrderBy(t *testing.T) {
+	b.OrderBy("a")
+	b.OrderByDesc("c")
+	t.Logf("orders: %+v",b.GetOrders())
+}
+
 func TestFunBuilder_Limit(t *testing.T) {
 	b.Limit(1)
 	t.Logf("limit: %d",b.GetLimit())

@@ -21,7 +21,7 @@ type FunBuilder struct {
 	wheres   []Where
 	groups   []string
 	havings  []Having
-	orders   []string
+	orders   []Order
 	limit    int
 	offset   int
 }
@@ -35,6 +35,10 @@ type Where struct {
 	IsAnd    bool // and OR or ?
 }
 type Having Where
+type Order struct {
+	Column string
+	Sort string
+}
 
 // New a FunBuilder
 func New(talbeName string) *FunBuilder {
@@ -69,7 +73,7 @@ func (f *FunBuilder) GetGroups() []string {
 func (f *FunBuilder) GetHavings() []Having {
 	return f.havings
 }
-func (f *FunBuilder) GetOrders() []string {
+func (f *FunBuilder) GetOrders() []Order {
 	return f.orders
 }
 func (f *FunBuilder) GetLimit() int {
@@ -308,6 +312,26 @@ func (f *FunBuilder) OrHavingRaw(sql string, value ...interface{}) *FunBuilder {
 		IsAnd:false,
 	})
 	f.addBindings(value, "having")
+	return f
+}
+func (f *FunBuilder) OrderBy(column string) *FunBuilder{
+	if(f.orders == nil){
+		f.orders = make([]Order,0)
+	}
+	f.orders = append(f.orders,Order{
+		Column: column,
+		Sort:   "asc",
+	})
+	return f
+}
+func (f *FunBuilder)OrderByDesc(column string) *FunBuilder{
+	if(f.orders == nil){
+		f.orders = make([]Order,0)
+	}
+	f.orders = append(f.orders,Order{
+		Column: column,
+		Sort:   "desc",
+	})
 	return f
 }
 func (f *FunBuilder) Limit(limit int) *FunBuilder{

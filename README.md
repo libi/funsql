@@ -111,6 +111,18 @@ funsql.Table("users").WhereNotBetween("age","=",10).OrWhere("age","=",20).
 GroupBy("sex","age").Having("age",">",10).Select()
 ```
 
+## Order By 
+需要对结果进行排序时使用OrderBy和OrderByDesc进行升序或者降序排序，可使用多个排序规则
+
+例如先使用年龄升序排序再使用性别降序排序
+
+```go
+funsql.Table("users").WhereNotBetween("age","=",10).OrWhere("age","=",20).
+OrderBy("age").OrderByDesc("sex").Select()
+```
+
+
+
 ## Limit / Offset
 需要限制结果数量或者返回指定offset的数据时，可以使用Limit 和 Offset，可以单独或者组合使用.
 

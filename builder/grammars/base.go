@@ -22,6 +22,7 @@ func (b *baseGrammar) init(){
 		b.compileWheres,
 		b.compileGroups,
 		b.compileHavings,
+		b.compileOrders,
 		b.compileLimit,
 		b.compileOffset,
 	}
@@ -174,6 +175,17 @@ func (b *baseGrammar) compileHavings(builder *FunBuilder) (sql string, err error
 	return "having " + b.removeLeading(sql), nil
 }
 
+func (b *baseGrammar) compileOrders(builder *FunBuilder) (sql string, err error) {
+	if(builder.GetOrders() == nil){
+		return "",nil
+	}
+	sql += "order by "
+	sqlArr := make([]string,0)
+	for _,order := range builder.GetOrders(){
+		sqlArr = append(sqlArr,order.Column+" "+order.Sort)
+	}
+	return sql+strings.Join(sqlArr,", "),nil
+}
 func (b *baseGrammar) compileLimit(builder *FunBuilder) (sql string, err error) {
 	if(builder.GetLimit()==0){
 		return "",nil

@@ -22,6 +22,8 @@ func TestTable(t *testing.T) {
 		OrWhereBetween("age",8,18).
 		WhereNotBetween("sex","boy","girl").
 		OrWhereRaw("name in (select name from users) as user_table").
+		OrderBy("age").
+		OrderByDesc("name").
 		Limit(1).
 		Offset(2).
 
