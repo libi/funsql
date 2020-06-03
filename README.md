@@ -7,7 +7,6 @@ funsql
 
 funsql拼装后的结果包含sql语句和绑定参数两部分，可以非常方便的将这两个参数传入标准sql包进行执行。
 
-!!!项目处理目前开发状态，请勿在线上使用
 
 ```go
 sql,binds,err := funsql.Table("users").Where("age",">",10).Select()
@@ -54,6 +53,13 @@ funsql.Table("users").Select("name","age")
 funsql.Table("users").Select("name")
 ```
 
+## Join
+构造Join查询只需要传入2个参数 分别为表名 ，条件sql
+
+```go
+funsql.Table("users").Join("order","users.id = order.uid").Select()
+```
+
 ## Where
 ### 简单语句
 
@@ -89,6 +95,7 @@ WhereRaw同时支持自动参数传入，此处需要注意传入的额外参数
 ```go
 funsql.Table("users").WhereRaw("age/2 = 10 and name in (select created_by from books where id = ?) as t",1)
 ```
+
 
 
 ### 更多where

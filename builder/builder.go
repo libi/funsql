@@ -18,12 +18,19 @@ type FunBuilder struct {
 	table    string
 	bindings map[string][]interface{}
 	columns  []string
+	joins    []Join
 	wheres   []Where
 	groups   []string
 	havings  []Having
 	orders   []Order
 	limit    int
 	offset   int
+}
+
+type Join struct {
+	Type  string
+	Table string
+	Query string
 }
 
 type Where struct {
@@ -61,6 +68,9 @@ func (f *FunBuilder) GetTable() string {
 func (f *FunBuilder) GetColumns() []string {
 	return f.columns
 }
+func (f *FunBuilder) GetJoins() []Join {
+	return f.joins
+}
 func (f *FunBuilder) GetWheres() []Where {
 	return f.wheres
 }
@@ -94,7 +104,14 @@ func (f *FunBuilder) Update() {
 
 }
 
-// Delete
+func (f *FunBuilder) Join(tableName string, on string) *FunBuilder {
+	f.addJoin(Join{
+		Type:  "join",
+		Table: tableName,
+		Query: on,
+	})
+	return f
+}
 
 func (f *FunBuilder) Where(column string, operator string, value interface{}) *FunBuilder {
 	f.addWhere(Where{
@@ -338,6 +355,13 @@ func (f *FunBuilder) Limit(limit int) *FunBuilder {
 func (f *FunBuilder) Offset(offset int) *FunBuilder {
 	f.offset = offset
 	return f
+}
+
+func (f *FunBuilder) addJoin(j Join) {
+	if f.joins == nil {
+		f.joins = make([]Join, 0)
+	}
+	f.joins = append(f.joins, j)
 }
 
 func (f *FunBuilder) addWhere(w Where) {

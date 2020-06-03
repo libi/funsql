@@ -18,6 +18,7 @@ func (b *baseGrammar) init() {
 	b.selectComponent = []func(builder *FunBuilder) (string, error){
 		b.compileColumns,
 		b.compileTable,
+		b.complieJoins,
 		b.compileWheres,
 		b.compileGroups,
 		b.compileHavings,
@@ -88,6 +89,33 @@ func (b *baseGrammar) compileColumns(builder *FunBuilder) (sql string, err error
 	}
 	columns := strings.Join(builder.GetColumns(), ", ")
 	return selectSql + columns, nil
+}
+
+func (b *baseGrammar) complieJoins(builder *FunBuilder) (sql string, err error) {
+	if builder.GetJoins() == nil {
+		return "", nil
+	}
+	sql = ""
+	for _, join := range builder.GetJoins() {
+
+		switch join.Type {
+		case "join":
+			sql += "join "
+		case "leftJoin":
+			sql += "left join "
+		case "rightJoin":
+			sql += "right join "
+		default:
+			sql += "join "
+
+		}
+
+		sql += join.Table
+		sql += " on "
+		sql += join.Query
+	}
+	fmt.Println(sql)
+	return
 }
 
 func (b *baseGrammar) compileWheres(builder *FunBuilder) (sql string, err error) {
