@@ -96,8 +96,7 @@ func (b *baseGrammar) complieJoins(builder *FunBuilder) (sql string, err error) 
 		return "", nil
 	}
 	sql = ""
-	for _, join := range builder.GetJoins() {
-
+	for i, join := range builder.GetJoins() {
 		switch join.Type {
 		case "join":
 			sql += "join "
@@ -113,8 +112,10 @@ func (b *baseGrammar) complieJoins(builder *FunBuilder) (sql string, err error) 
 		sql += join.Table
 		sql += " on "
 		sql += join.Query
+		if i != len(builder.GetJoins())-1 {
+			sql += " "
+		}
 	}
-	fmt.Println(sql)
 	return
 }
 

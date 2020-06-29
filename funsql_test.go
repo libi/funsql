@@ -8,6 +8,7 @@ func TestTable(t *testing.T) {
 	table := Table("a", "mysql")
 	sql, vals, err := table.
 		Join("b", "a.id = b.a_id").
+		Join("c", "c.id = b.a_id").
 		Where("c", ">", 0).
 		WhereIn("a", []int{1, 2, 3}).
 		Group("a", "b").
