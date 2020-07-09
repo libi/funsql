@@ -6,7 +6,7 @@ funsql
 目前已经支持大部分的sql操作语句。
 
 funsql拼装后的结果包含sql语句和绑定参数两部分，可以非常方便的将这两个参数传入标准sql包进行执行。
-增加了scan支持，可将标准库sql包返回的rows直接写入到自定义的结构体切片内。
+增加了scan支持，可将标准库sql包返回的rows直接绑定到自定义的结构体切片内。
 
 ```go
 sql,binds,err := funsql.Table("users").Where("age",">",10).Select()
@@ -45,8 +45,9 @@ funsql.Table("users").Select("name","age")
 ```
 
 ## Scan使用
-Scan支持二维结构体切片与一维切片，适用于查询多条多字段数据和多条单个字段数据。
+Scan支持二维结构体切片与一维切片，适用于查询多条多字段数据和多条单个字段数据。结构体可选使用tag fs作为字段标识，不存在tag fs时使用小写形式的字段名。
 
+### 多条多字段使用
 ```go
 type Order struct {
 	ID      int64  `fs:"id"`
@@ -54,6 +55,14 @@ type Order struct {
 }
 orders := make([]Order, 0)
 err = Scan(rows, &orders)
+
+```
+
+### 多条单个字段
+
+```go
+orderIDs := make([]int64, 0)
+err = Scan(rows, &orderIDs)
 
 ```
 
