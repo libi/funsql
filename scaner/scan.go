@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"github.com/pkg/errors"
 	"reflect"
-	"strings"
 )
 
 func Scan(rows *sql.Rows, value interface{}) error {
@@ -62,9 +61,11 @@ func mapColumnFields(rows *sql.Rows, typ reflect.Type) (fieldIndexs []int, err e
 	}
 	for i := 0; i < typ.NumField(); i++ {
 		fieldName := typ.Field(i).Tag.Get("fs")
+		if (fieldName == "-") {
+			continue
+		}
 		if (fieldName == "") {
-			// todo 驼峰转蛇形
-			fieldName = strings.ToLower(typ.Field(i).Name)
+			fieldName = Underscore(typ.Field(i).Name)
 		}
 
 		for j, column := range columns {
