@@ -1,4 +1,4 @@
-package scaner
+package db
 
 import (
 	"database/sql"
@@ -25,25 +25,15 @@ func Scan(rows *sql.Rows, value interface{}) error {
 	// slice ele type
 	structType := indirectType(typ.Elem())
 
-	columns, err := rows.Columns()
-	if (err != nil) {
-		return err
-	}
-
 	if structType.Kind() == reflect.Struct {
-		fieldIndexs, err := mapColumnFields(columns, structType)
+		fieldIndexs, err := mapColumnFields(rows, structType)
 		if (err != nil) {
 			return err
 		}
 		v1 := make([]reflect.Value, 0)
 		for rows.Next() {
 			item := reflect.New(structType)
-			params := make([]interface{}, len(fieldIndexs))
-			for _, index := range fieldIndexs {
-				params[index] = item.Elem().Field(index).Addr().Interface()
-			}
-			err := rows.Scan(params...)
-			if err != nil {
+			if err := scanStruct(rows, fieldIndexs, item); err != nil {
 				return err
 			}
 			v1 = append(v1, item.Elem())
@@ -65,7 +55,11 @@ func Scan(rows *sql.Rows, value interface{}) error {
 	return errors.New("unsupport data type")
 }
 
-func mapColumnFields(columns []string, typ reflect.Type) (fieldIndexs []int, err error) {
+func mapColumnFields(rows *sql.Rows, typ reflect.Type) (fieldIndexs []int, err error) {
+	columns, err := rows.Columns()
+	if (err != nil) {
+		return
+	}
 	for i := 0; i < typ.NumField(); i++ {
 		fieldName := typ.Field(i).Tag.Get("fs")
 		if (fieldName == "") {
@@ -94,6 +88,35 @@ func indirectType(t reflect.Type) reflect.Type {
 	return t
 }
 
-func ScanRow(row *sql.Row, res ...interface{}) error {
-	return nil
+func ScanRow(rows *sql.Rows, value interface{}) error {
+	v := reflect.ValueOf(value)
+	if !v.IsValid() {
+		return errors.New("value is nil")
+	}
+	if v.Kind() != reflect.Ptr {
+		return errors.Errorf("value non-pointer %T", value)
+	}
+	if v.Elem().Kind() != reflect.Struct {
+		return errors.New("value not is struct")
+	}
+
+	fieldIndexs, err := mapColumnFields(rows, v.Elem().Type())
+	if (err != nil) {
+		return err
+	}
+	if !rows.Next() {
+		if err := rows.Err(); err != nil {
+			return err
+		}
+		return sql.ErrNoRows
+	}
+	return scanStruct(rows, fieldIndexs, v)
+}
+
+func scanStruct(rows *sql.Rows, fieldIndexs []int, value reflect.Value) error {
+	params := make([]interface{}, len(fieldIndexs))
+	for _, index := range fieldIndexs {
+		params[index] = value.Elem().Field(index).Addr().Interface()
+	}
+	return rows.Scan(params...)
 }
