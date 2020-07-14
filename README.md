@@ -1,5 +1,9 @@
 funsql 
---
+==========
+[![Language](https://img.shields.io/badge/Language-Go-blue.svg)](https://golang.org/)
+[![Build Status](https://travis-ci.org/LibiChai/funsql.svg?branch=master)](https://travis-ci.org/LibiChai/funsql)
+[![Go Report Card](https://goreportcard.com/badge/github.com/LibiChai/funsql)](https://goreportcard.com/report/github.com/LibiChai/funsql)
+
 
 ## 简介
 **funsql**是一个轻量级的sqlbuilder/scan包，支持函数链式调用且函数名与sql语法相同，可以非常简易的使用go语法进行sql拼装，
