@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"github.com/LibiChai/funsql/util"
 	"github.com/pkg/errors"
 	"reflect"
 )
@@ -26,7 +27,7 @@ func Scan(rows *sql.Rows, value interface{}) error {
 
 	if structType.Kind() == reflect.Struct {
 		fieldIndexs, err := mapColumnFields(rows, structType)
-		if (err != nil) {
+		if err != nil {
 			return err
 		}
 		v1 := make([]reflect.Value, 0)
@@ -56,26 +57,24 @@ func Scan(rows *sql.Rows, value interface{}) error {
 
 func mapColumnFields(rows *sql.Rows, typ reflect.Type) (fieldIndexs []int, err error) {
 	columns, err := rows.Columns()
-	if (err != nil) {
+	if err != nil {
 		return
 	}
 	for i := 0; i < typ.NumField(); i++ {
-		fieldName := typ.Field(i).Tag.Get("fs")
-		if (fieldName == "-") {
+
+		fieldName := util.GetFieldName(typ.Field(i))
+		if fieldName == "-" {
 			continue
-		}
-		if (fieldName == "") {
-			fieldName = Underscore(typ.Field(i).Name)
 		}
 
 		for j, column := range columns {
-			if (fieldName == column) {
+			if fieldName == column {
 				fieldIndexs = append(fieldIndexs, j)
 				break
 			}
 		}
 	}
-	if (len(fieldIndexs) != len(columns)) {
+	if len(fieldIndexs) != len(columns) {
 		err = errors.New("find some unknown field")
 		return
 	}
@@ -102,7 +101,7 @@ func ScanRow(rows *sql.Rows, value interface{}) error {
 	}
 
 	fieldIndexs, err := mapColumnFields(rows, v.Elem().Type())
-	if (err != nil) {
+	if err != nil {
 		return err
 	}
 	if !rows.Next() {

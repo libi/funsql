@@ -3,6 +3,7 @@ package grammars
 import (
 	"fmt"
 	. "github.com/LibiChai/funsql/builder"
+	"github.com/LibiChai/funsql/util"
 	"reflect"
 	"strconv"
 	"strings"
@@ -49,22 +50,83 @@ func (b *baseGrammar) CompileSelect(builder *FunBuilder) (sql string, val []inte
 	}
 	return
 }
-func (b *baseGrammar) CompileUpdate(builder *FunBuilder) (sql string, val []interface{}, err error) {
-	fmt.Println("update")
-	return "", nil, nil
+func (b *baseGrammar) CompileUpdate(builder *FunBuilder, value map[string]interface{}) (sql string, val []interface{}, err error) {
+	joinSql := ""
+	if len(builder.GetJoins()) > 0 {
+		joinSql += " "
+		joinSql, err = b.complieJoins(builder)
+		if err != nil {
+			return "", nil, err
+		}
+	}
+
+	bindings := builder.GetBindings()
+
+	whereSql, err := b.compileWheres(builder)
+	updateSql := ""
+	isFirst := true
+	for column, bindVal := range value {
+		if !isFirst {
+			updateSql += ","
+		}
+		updateSql += column + "=" + b.placeholder
+		isFirst = false
+		val = append(val, bindVal)
+	}
+	if bindings["where"] != nil {
+		val = append(val, bindings["where"]...)
+	}
+	return fmt.Sprintf("update %s%s set %s %s", builder.GetTable(), joinSql, updateSql, whereSql), val, nil
+}
+func (b *baseGrammar) CompileInsert(builder *FunBuilder, value interface{}) (sql string, val []interface{}, err error) {
+	v1 := reflect.ValueOf(value)
+	if v1.Kind() == reflect.Ptr {
+		v1 = v1.Elem()
+	}
+	columns := make([]string, 0)
+	placeholders := make([]string, 0)
+
+	switch v1.Kind() {
+	case reflect.Struct:
+		for i := 0; i < v1.NumField(); i++ {
+			fieldName := util.GetFieldName(v1.Type().Field(i))
+			if fieldName == "-" {
+				continue
+			}
+			columns = append(columns, fieldName)
+			placeholders = append(placeholders, b.placeholder)
+			val = append(val, v1.Field(i).Interface())
+		}
+	case reflect.Map:
+		keys := v1.MapKeys()
+		for _, k := range keys {
+			columns = append(columns, k.String())
+			placeholders = append(placeholders, b.placeholder)
+			val = append(val, v1.MapIndex(k).Interface())
+		}
+	}
+
+	return fmt.Sprintf("insert into %s (%s) values (%s)", builder.GetTable(), strings.Join(columns, ","), strings.Join(placeholders, ",")), val, nil
 }
 func (b *baseGrammar) CompileDelete(builder *FunBuilder) (sql string, val []interface{}, err error) {
-	fmt.Println("update")
-	return "", nil, nil
-}
-func (b *baseGrammar) CompileInsert(builder *FunBuilder) (sql string, val []interface{}, err error) {
-	fmt.Println("update")
-	return "", nil, nil
+	fmt.Println("delete")
+	wheres, err := b.compileWheres(builder)
+	if err != nil {
+		return "", nil, err
+	}
+	bindings := builder.GetBindings()
+	if bindings["where"] != nil {
+		val = append(val, bindings["where"]...)
+	}
+	if bindings["having"] != nil {
+		val = append(val, bindings["having"]...)
+	}
+
+	return fmt.Sprintf("delete from %s %s", builder.GetTable(), wheres), val, nil
 }
 
 func (b *baseGrammar) compileSelectComponents(builder *FunBuilder) (sqls []string, err error) {
 	sqls = make([]string, 0)
-
 	for _, component := range b.selectComponent {
 		sql, err := component(builder)
 		if err != nil {

@@ -33,9 +33,9 @@ funsql 使用链式调用进行sql拼装，但是最终都必须以 **结果函�
 
 结果函数包括([x]为todo项目)：
 - Select 
-- Update [x]
-- Delete [x]
-- Insert [x]
+- Update 
+- Delete 
+- Insert 
 - Exist [x]
 - NotExist [x]
 - Count [x]

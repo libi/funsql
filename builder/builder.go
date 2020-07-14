@@ -100,8 +100,18 @@ func (f *FunBuilder) Select(colums ...string) (sql string, val []interface{}, er
 }
 
 // Update
-func (f *FunBuilder) Update() {
+func (f *FunBuilder) Update(value map[string]interface{}) (sql string, val []interface{}, err error) {
+	return f.grammar.CompileUpdate(f, value)
+}
 
+// Insert
+func (f *FunBuilder) Insert(value interface{}) (sql string, val []interface{}, err error) {
+	return f.grammar.CompileInsert(f, value)
+}
+
+// Delete
+func (f *FunBuilder) Delete() (sql string, val []interface{}, err error) {
+	return f.grammar.CompileDelete(f)
 }
 
 func (f *FunBuilder) Join(tableName string, on string) *FunBuilder {

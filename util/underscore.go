@@ -1,4 +1,4 @@
-package db
+package util
 
 func IsUpper(c byte) bool {
 	return c >= 'A' && c <= 'Z'
