@@ -52,7 +52,7 @@ func Scan(rows *sql.Rows, value interface{}) error {
 		}
 		v.Set(reflect.Append(v, v1...))
 	}
-	return errors.New("unsupport data type")
+	return nil
 }
 
 func mapColumnFields(rows *sql.Rows, typ reflect.Type) (fieldIndexs []int, err error) {
