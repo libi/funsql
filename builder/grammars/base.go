@@ -69,7 +69,7 @@ func (b *baseGrammar) CompileUpdate(builder *FunBuilder, value map[string]interf
 		if !isFirst {
 			updateSql += ","
 		}
-		updateSql += column + "=" + b.placeholder
+		updateSql += "`" + column + "`=" + b.placeholder
 		isFirst = false
 		val = append(val, bindVal)
 	}
@@ -93,14 +93,14 @@ func (b *baseGrammar) CompileInsert(builder *FunBuilder, value interface{}) (sql
 			if fieldName == "-" {
 				continue
 			}
-			columns = append(columns, fieldName)
+			columns = append(columns, "`"+fieldName+"`")
 			placeholders = append(placeholders, b.placeholder)
 			val = append(val, v1.Field(i).Interface())
 		}
 	case reflect.Map:
 		keys := v1.MapKeys()
 		for _, k := range keys {
-			columns = append(columns, k.String())
+			columns = append(columns, "`"+k.String()+"`")
 			placeholders = append(placeholders, b.placeholder)
 			val = append(val, v1.MapIndex(k).Interface())
 		}
