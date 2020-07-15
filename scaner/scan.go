@@ -115,8 +115,8 @@ func ScanRow(rows *sql.Rows, value interface{}) error {
 
 func scanStruct(rows *sql.Rows, fieldIndexs []int, value reflect.Value) error {
 	params := make([]interface{}, len(fieldIndexs))
-	for _, index := range fieldIndexs {
-		params[index] = value.Elem().Field(index).Addr().Interface()
+	for i, index := range fieldIndexs {
+		params[index] = value.Elem().Field(i).Addr().Interface()
 	}
 	return rows.Scan(params...)
 }
