@@ -63,7 +63,7 @@ func (f *FunBuilder) SetGrammar(grammarName string) {
 	}
 }
 func (f *FunBuilder) GetTable() string {
-	return f.table
+	return "`" + f.table + "`"
 }
 func (f *FunBuilder) GetColumns() []string {
 	return f.columns
