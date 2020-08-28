@@ -67,9 +67,9 @@ func mapColumnFields(rows *sql.Rows, typ reflect.Type) (fieldIndexs []int, err e
 			continue
 		}
 
-		for j, column := range columns {
+		for _, column := range columns {
 			if fieldName == column {
-				fieldIndexs = append(fieldIndexs, j)
+				fieldIndexs = append(fieldIndexs, i)
 				break
 			}
 		}
@@ -116,7 +116,7 @@ func ScanRow(rows *sql.Rows, value interface{}) error {
 func scanStruct(rows *sql.Rows, fieldIndexs []int, value reflect.Value) error {
 	params := make([]interface{}, len(fieldIndexs))
 	for i, index := range fieldIndexs {
-		params[index] = value.Elem().Field(i).Addr().Interface()
+		params[i] = value.Elem().Field(index).Addr().Interface()
 	}
-	return rows.Scan(params...)
+	return errors.Wrap(rows.Scan(params...), "scan struce error")
 }
