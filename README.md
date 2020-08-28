@@ -10,14 +10,18 @@ funsql
 目前已经支持大部分的sql操作语句。
 
 funsql拼装后的结果包含sql语句和绑定参数两部分，可以非常方便的将这两个参数传入标准sql包进行执行。
+
 增加了scan支持，可将标准库sql包返回的rows直接绑定到自定义的结构体切片内。
 
+## 快速开始
 ```go
-sql,binds,err := funsql.Table("users").Where("age",">",10).Select()
-//输出
+sqlStr,args,err := funsql.Table("users").Where("age",">",10).Select()
+row,err := sql.Query(sqlStr,args...)
+//输出sql 与 args 可以直接作为sql标准库Query()的入参。
 //sql: select * from users where age > ?
 //binds: []int{10,}
 //err: nil
+
 ```
 ## 入口函数 Table()
 为了简化语句，每次sql拼装都必须首先执行入口函数。入口函数会返回*FunBuilder实例作为后续链式操作de基础对象。
@@ -47,29 +51,6 @@ funsql 使用链式调用进行sql拼装，但是最终都必须以 **结果函�
 ```go
 funsql.Table("users").Select("name","age")
 ```
-
-## Scan使用
-Scan支持二维结构体切片与一维切片，适用于查询多条多字段数据和多条单个字段数据。结构体可选使用tag fs作为字段标识，不存在tag fs时使用小写形式的字段名。
-
-### 多条多字段使用
-```go
-type Order struct {
-	ID      int64  `fs:"id"`
-	OrderNo string `fs:"order_no"`
-}
-orders := make([]Order, 0)
-err = Scan(rows, &orders)
-
-```
-
-### 多条单个字段
-
-```go
-orderIDs := make([]int64, 0)
-err = Scan(rows, &orderIDs)
-
-```
-
 
 ## Select 
 在调用Select不传入操作时默认为 * 。当然大部分时候并不希望返回数据库表的所有列，此时可以指定需要的字段即可。
@@ -179,6 +160,28 @@ OrderBy("age").OrderByDesc("sex").Select()
 ```go
 funsql.Table("users").WhereNotBetween("age","=",10).OrWhere("age","=",20).
 GroupBy("sex","age").Having("age",">",10).Limit(5).Offset(3).Select()
+```
+
+## Scan使用
+Scan支持二维结构体切片与一维切片，适用于查询多条多字段数据和多条单个字段数据。结构体可选使用tag fs作为字段标识，不存在tag fs时使用小写形式的字段名。
+
+### 多条多字段使用
+```go
+type Order struct {
+	ID      int64  `fs:"id"`
+	OrderNo string `fs:"order_no"`
+}
+orders := make([]Order, 0)
+err = Scan(rows, &orders)
+
+```
+
+### 多条单个字段
+
+```go
+orderIDs := make([]int64, 0)
+err = Scan(rows, &orderIDs)
+
 ```
 
 
