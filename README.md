@@ -2,7 +2,7 @@ funsql
 ==========
 [![Language](https://img.shields.io/badge/Language-Go-blue.svg)](https://golang.org/)
 [![Build Status](https://travis-ci.org/LibiChai/funsql.svg?branch=master)](https://travis-ci.org/LibiChai/funsql)
-[![Go Report Card](https://goreportcard.com/badge/github.com/LibiChai/funsql)](https://goreportcard.com/report/github.com/LibiChai/funsql)
+[![Go Report Card](https://goreportcard.com/badge/github.com/libi/funsql)](https://goreportcard.com/report/github.com/libi/funsql)
 
 
 ## 简介

@@ -2,7 +2,7 @@ package scaner
 
 import (
 	"database/sql"
-	"github.com/LibiChai/funsql/util"
+	"github.com/libi/funsql/util"
 	"github.com/pkg/errors"
 	"reflect"
 )

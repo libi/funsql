@@ -1,7 +1,7 @@
 package grammars
 
 import (
-	"github.com/LibiChai/funsql/builder"
+	"github.com/libi/funsql/builder"
 	"log"
 	"testing"
 )

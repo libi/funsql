@@ -1,6 +1,6 @@
 package grammars
 
-import "github.com/LibiChai/funsql/builder"
+import "github.com/libi/funsql/builder"
 
 func init() {
 	builder.RegisterGrammar("mysql", newMysqlGrammar())

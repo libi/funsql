@@ -2,8 +2,8 @@ package grammars
 
 import (
 	"fmt"
-	. "github.com/LibiChai/funsql/builder"
-	"github.com/LibiChai/funsql/util"
+	. "github.com/libi/funsql/builder"
+	"github.com/libi/funsql/util"
 	"reflect"
 	"strconv"
 	"strings"

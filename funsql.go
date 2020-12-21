@@ -1,7 +1,7 @@
 package funsql
 
-import "github.com/LibiChai/funsql/builder"
-import _ "github.com/LibiChai/funsql/builder/grammars"
+import "github.com/libi/funsql/builder"
+import _ "github.com/libi/funsql/builder/grammars"
 
 const defaultGrammar = "mysql"
 
