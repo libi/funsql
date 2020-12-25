@@ -2,6 +2,7 @@ package scaner
 
 import (
 	"database/sql"
+	"fmt"
 	"github.com/libi/funsql/util"
 	"github.com/pkg/errors"
 	"reflect"
@@ -57,28 +58,35 @@ func Scan(rows *sql.Rows, value interface{}) error {
 
 func mapColumnFields(rows *sql.Rows, typ reflect.Type) (fieldIndexs []int, err error) {
 	columns, err := rows.Columns()
+	fieldIndexs = make([]int, len(columns))
 	if err != nil {
 		return
 	}
+	for n, column := range columns {
+		fieldIndex, ok := searchFieldIndex(typ, column)
+		if !ok {
+			err = errors.New(fmt.Sprintf("not found field: %s", column))
+			return
+		}
+		fieldIndexs[n] = fieldIndex
+	}
+
+	return
+}
+func searchFieldIndex(typ reflect.Type, columnName string) (index int, ok bool) {
 	for i := 0; i < typ.NumField(); i++ {
 
 		fieldName := util.GetFieldName(typ.Field(i))
 		if fieldName == "-" {
 			continue
 		}
-
-		for _, column := range columns {
-			if fieldName == column {
-				fieldIndexs = append(fieldIndexs, i)
-				break
-			}
+		if fieldName == columnName {
+			return i, true
 		}
-	}
-	if len(fieldIndexs) != len(columns) {
-		err = errors.New("find some unknown field")
-		return
+
 	}
 	return
+
 }
 
 func indirectType(t reflect.Type) reflect.Type {
