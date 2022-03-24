@@ -39,14 +39,12 @@ funsql.Table("users","mysql")
 ## 结果函数 
 funsql 使用链式调用进行sql拼装，但是最终都必须以 **结果函数** 作为链式的结果才能返回拼装好的sql语句与绑定参数。
 
-结果函数包括([x]为todo项目)：
+结果函数包括([x]为todo项目):
 - Select 
+- SelectRaw [x]
 - Update 
 - Delete 
-- Insert 
-- Exist [x]
-- NotExist [x]
-- Count [x]
+- Insert
 
 ```go
 funsql.Table("users").Select("name","age")

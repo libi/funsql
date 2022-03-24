@@ -145,6 +145,9 @@ func (b *baseGrammar) compileTable(builder *FunBuilder) (sql string, err error) 
 }
 
 func (b *baseGrammar) compileColumns(builder *FunBuilder) (sql string, err error) {
+	if builder.GetColumnsRaw() != "" {
+		return "select " + builder.GetColumnsRaw() + " ", nil
+	}
 	selectSql := "select "
 	if builder.GetColumns() == nil {
 		return selectSql + "* ", nil

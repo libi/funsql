@@ -15,16 +15,17 @@ import "reflect"
 type FunBuilder struct {
 	grammar Grammar
 
-	table    string
-	bindings map[string][]interface{}
-	columns  []string
-	joins    []Join
-	wheres   []Where
-	groups   []string
-	havings  []Having
-	orders   []Order
-	limit    int
-	offset   int
+	table     string
+	bindings  map[string][]interface{}
+	columns   []string
+	columnRaw string
+	joins     []Join
+	wheres    []Where
+	groups    []string
+	havings   []Having
+	orders    []Order
+	limit     int
+	offset    int
 }
 
 type Join struct {
@@ -63,10 +64,13 @@ func (f *FunBuilder) SetGrammar(grammarName string) {
 	}
 }
 func (f *FunBuilder) GetTable() string {
-	return  f.table
+	return f.table
 }
 func (f *FunBuilder) GetColumns() []string {
 	return f.columns
+}
+func (f *FunBuilder) GetColumnsRaw() string {
+	return f.columnRaw
 }
 func (f *FunBuilder) GetJoins() []Join {
 	return f.joins
@@ -96,6 +100,12 @@ func (f *FunBuilder) GetOffset() int {
 // Select
 func (f *FunBuilder) Select(colums ...string) (sql string, val []interface{}, err error) {
 	f.columns = colums
+	return f.grammar.CompileSelect(f)
+}
+
+// SelectRaw
+func (f *FunBuilder) SelectRaw(selectRaw string) (sql string, val []interface{}, err error) {
+	f.columnRaw = selectRaw
 	return f.grammar.CompileSelect(f)
 }
 
